@@ -1835,7 +1835,7 @@ async function main() {
 
       const url = `https://v2.api.iphub.info/ip/${ip}`;
       if (ip !== '192.168.101.170') { // 62.212.64.17 - aeiou vpn
-        /*axios.get(url, {
+        axios.get(url, {
           headers: {
             'X-Key': process.env.IPHUBKEY
           }
@@ -1847,7 +1847,7 @@ async function main() {
           };
         }).catch(err => {
           console.error(err);
-        });*/
+        });
       };
 
       if (existingIPs[ip]) {
@@ -1859,15 +1859,10 @@ async function main() {
         console.log(`Kicked ip (more than 2 found).`)
         ws.close() // 2 Tabs Maximum
       };
-      setInterval(() => {
-        if (getIP() !== ip) {
-            ban('Nice try.');
-        };
-      }, 5000);
 
       console.log('connect')
       const rho = request.headers.origin;
-      if (rho.includes('test.acropolis.ac')) {
+      if (/http(s)?:\/\/(test\.acropolis\.ac|admin\.acropolis\.ac)/.test(rho)) {
         console.log('join');
       } else {
         console.log('kicked socket for header fail');
@@ -1922,6 +1917,92 @@ async function main() {
           return
         }
         switch(type) {
+          case 'admin': {
+            if (ws.onAdminAcro) break;
+            if (sha256(data[0]) === '06edd04eb47f450b398e68e381192e8b989f45a660b43d4ef0f07e4b47473348') {
+              ws.sendPacket(['accepted']);
+              ws.onAdminAcro = true;
+            } else {
+              ws.sendPacket(['rejected']);
+              ws.close();
+            };
+            break;
+          };
+          case 'adminCommand': {
+            if (!ws.onAdminAcro) break;
+            const parameters = [];
+            let type = 'normal';
+            let value = '';
+            let escapedString = false;
+            for (let i = 0; i < data[0].length; i++) {
+                switch (type) {
+                    case 'normal': {
+                        if (data[0][i] == ' ') {
+                            parameters.push(value);
+                            if (data[0][i + 1] == '"' || data[0][i + 1] == "'") {
+                                type = 'string';
+                                escapedString = false;
+                            };
+                            value = '';
+                        } else {
+                            value += data[0][i];
+                        };
+                        break;
+                    }
+                    case 'string': {
+                        if (!escapedString && value.length > 1 && data[0][i - 1] == value[0]) {
+                            parameters.push(value.slice(1, value.length - 1));
+                            type = 'normal';
+                            if (data[0][i + 1] == '"' || data[0][i + 1] == "'") {
+                                type = 'string';
+                                escapedString = false;
+                            };
+                            value = '';
+                        } else if (data[0][i] != '\\' || escapedString) {
+                            value += data[0][i];
+                        } else {
+                            escapedString = true;
+                        };
+                    }
+                };
+            };
+            if (value) parameters.push(type == 'normal' ? value : value.slice(1, value.length - 1));
+            const cmd = parameters.splice(0, 1)[0];
+            switch (cmd) {
+                case 'help': {
+                    ws.sendPacket(['log', `
+                        help - Shows list of terminal commands.<br>
+                        exec [command] - Runs [command] ingame.
+                    `, 'white']);
+                    break;
+                };
+                case 'exec': {
+                    const cmdName = parameters[0].split(' ')[0];
+                    try {
+                        Command.execute({
+                            sendPacket: function(data: any[]) {
+                                if (data[0] == 1 && data[1] == 'addNotification') {
+                                    ws.sendPacket(['log', data[2]
+                                        .replaceAll('&', '&amp;')
+                                        .replaceAll('<', '&lt;')
+                                        .replaceAll('>', '&gt;')
+                                    ]);
+                                };
+                            },
+                            yt: true,
+                            mod: true,
+                            admin: true,
+                            developer: true
+                        }, cmdName, parameters[0].split(' ').slice(1));
+                        ws.sendPacket(['log', 'Finished executing command.']);
+                    } catch {
+                        ws.sendPacket(['log', `Something went wrong whilst trying to execute command ${cmdName}`, 'red']);
+                    };
+                    break;
+                };
+            };
+            break;
+          };
           case 'joingame': {
             updatePlayerCount();
             ASPB.forEach(name => {

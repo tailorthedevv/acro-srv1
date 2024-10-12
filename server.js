@@ -2072,6 +2072,7 @@ async function main() {
           case 'token': {
             let t = data[0] ? sha256(data[0]) : '';
             if (t === process.env.developerToken) {
+              console.log(`Token Joined: [Developer] ${ws.tank.name} ${encryptIP(ws.ip)}`);
               ws.developer = true;
               ws.admin = true;
               ws.mod = true;
@@ -2081,6 +2082,7 @@ async function main() {
               ws.ranktag = 4
               ws.sendPacket(['rank', true]);
             } else if (t === process.env.adminToken) {
+              console.log(`Token Joined: [Admin] ${ws.tank.name} ${encryptIP(ws.ip)}`);
               ws.admin = true;
               ws.mod = true;
               ws.yt = true;
@@ -2090,6 +2092,7 @@ async function main() {
               ws.sendPacket(['rank', true]);
               // mod token
             } else if (t === "3a351d593f4ab4f5bae2ebf4eb49da30fa2c19b9ad93edf64d5f4315d1aff6e5") {
+              console.log(`Token Joined: [Moderator] ${ws.tank.name} ${encryptIP(ws.ip)}`);
               ws.mod = true;
               ws.yt = true;
               ws.tank.nameColor = 129;
@@ -2097,12 +2100,14 @@ async function main() {
               ws.ranktag = 2
               ws.sendPacket(['rank', true]);
             } else if (t === process.env.ytToken) {
+              console.log(`Token Joined: [YouTuber] ${ws.tank.name} ${encryptIP(ws.ip)}`);
               ws.yt = true;
               ws.nolimit = true;
               ws.tank.nameColor = 130;
               ws.ranktag = 1
               ws.sendPacket(['rank', true]);
             } else if (t === process.env.tankgalToken) {
+              console.log(`Token Joined: [Moderator] ${ws.tank.name} ${encryptIP(ws.ip)}`);
               ws.mod = true;
               ws.yt = true;
               ws.tank.nameColor = 131;
@@ -2110,10 +2115,12 @@ async function main() {
               ws.sendPacket(['rank', true]);
               // fc token
             } else if (t === "7e8ab34459e502c8fd99d0e227e79fec016682c400f41165ec35e5f13a5d8b83") {
+              console.log(`Token Joined: [Featured Creator] ${ws.tank.name} ${encryptIP(ws.ip)}`);
               ws.nolimit = true;
               ws.tank.nameColor = ['#3d70f2', '#a43df2'];
               ws.ranktag = 5;
             } else if (t === process.env.devHelperToken) {
+              console.log(`Token Joined: [Developer Helper] ${ws.tank.name} ${encryptIP(ws.ip)}`);
               ws.nolimit = true;
               ws.admin = true;
               ws.mod = true;

@@ -1862,16 +1862,17 @@ async function main() {
 
       console.log('connect')
       const rho = request.headers.origin;
-      if (/http(s)?:\/\/(test\.acropolis\.ac|admin\.acropolis\.ac)/.test(rho)) {
-        console.log('join');
-      } else {
-        console.log('kicked socket for header fail');
-        ws.close();
-        return;
-      };
       ws.sendPacket = function(packet) {
         ws.send(pack(packet))
       }
+      if (/http(s)?:\/\/(test|admin)\.acropolis\.ac)/.test(rho)) {
+        console.log('join');
+      } else {
+        console.log('kicked socket for header fail');
+        ws.sendPacket(['log', 'Incorrect Link', 'red']);
+        ws.close();
+        return;
+      };
       ws.sendPacket(['newPerformance', performanceNow()]);
       ws.clientId = getId();
       clients[ws.clientId] = ws

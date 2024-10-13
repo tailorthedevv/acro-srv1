@@ -1,7 +1,7 @@
 const { pack, unpack } = require("msgpackr") // leave this
 const WebSocket = require("ws"), { WebSocketServer } = WebSocket
 const { performance } = require('perf_hooks')
-const { sha256 } = require('js-sha256');
+const { sha256 } = require('js-sha256')
 const sqlite3 = require('sqlite3').verbose()
 const axios = require('axios');
 

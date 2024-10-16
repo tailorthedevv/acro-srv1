@@ -1975,11 +1975,60 @@ async function main() {
                 case 'help': {
                     ws.sendPacket(['log', `
                         help - Shows list of terminal commands.<br>
-                        exec [command] - Runs [command] ingame.
+                        exec [command] - Runs [command] ingame from the dimension "main".<br>
+                        exec-dim [dim] [command] - Runs [command] from the dimension [dim].<br>
+                        listdims - Shows the list of dimensions that currently exist.
                     `, 'white']);
                     break;
                 };
+                case 'listdims': {
+                    for (let dim of dims) {
+                      ws.sendPacket(['log', `${dim.private ? '<span style="color:green;font-weight:bold;">[PRIVATE] </span>' : ''}${dim.id}`]);
+                    };
+                };
+                case 'exec-dim': {
+                    let dim = false;
+                    for (let dim of dims) {
+                      if (dims.id == parameters[0]) {
+                        dim = dims.id;
+                      };
+                    };
+                    if (!dim) {
+                      ws.sendPacket(['log', `The provided dimension, "${parameters[0]}", does not exist.`, 'red']);
+                    };
+                    if (parameters.length != 2) {
+                      ws.sendPacket(['log', 'The `exec-dim` command requires only 2 arguments!', 'red']);
+                      break;
+                    };
+                    const cmdName = parameters[1].split(' ')[0];
+                    try {
+                        Command.execute({
+                            sendPacket: function(data) {
+                                if (data[0] == 1 && data[1] == 'addNotification') {
+                                    ws.sendPacket(['log', data[2]
+                                        .replaceAll('&', '&amp;')
+                                        .replaceAll('<', '&lt;')
+                                        .replaceAll('>', '&gt;')
+                                    ]);
+                                };
+                            },
+                            yt: true,
+                            mod: true,
+                            admin: true,
+                            developer: true,
+                            dim: dim
+                        }, cmdName, parameters[1].split(' ').slice(1));
+                        ws.sendPacket(['log', 'Finished executing command.']);
+                    } catch {
+                        ws.sendPacket(['log', `Something went wrong whilst trying to execute command ${cmdName}`, 'red']);
+                    };
+                    break;
+                };
                 case 'exec': {
+                    if (parameters.length != 1) {
+                      ws.sendPacket(['log', 'The `exec` command requires only 1 argument!', 'red']);
+                      break;
+                    };
                     const cmdName = parameters[0].split(' ')[0];
                     try {
                         Command.execute({
@@ -1995,7 +2044,8 @@ async function main() {
                             yt: true,
                             mod: true,
                             admin: true,
-                            developer: true
+                            developer: true,
+                            dim: 'main'
                         }, cmdName, parameters[0].split(' ').slice(1));
                         ws.sendPacket(['log', 'Finished executing command.']);
                     } catch {

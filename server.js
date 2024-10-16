@@ -1985,6 +1985,7 @@ async function main() {
                     for (let dim of dims) {
                       ws.sendPacket(['log', `${dim.private ? '<span style="color:green;font-weight:bold;">[PRIVATE] </span>' : ''}${dim.id}`]);
                     };
+                    break;
                 };
                 case 'exec-dim': {
                     let dim = false;

@@ -1983,7 +1983,7 @@ async function main() {
                     const cmdName = parameters[0].split(' ')[0];
                     try {
                         Command.execute({
-                            sendPacket: function(data: any[]) {
+                            sendPacket: function(data) {
                                 if (data[0] == 1 && data[1] == 'addNotification') {
                                     ws.sendPacket(['log', data[2]
                                         .replaceAll('&', '&amp;')

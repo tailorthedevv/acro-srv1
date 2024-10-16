@@ -1996,6 +1996,7 @@ async function main() {
                     };
                     if (!dim) {
                       ws.sendPacket(['log', `The provided dimension, "${parameters[0]}", does not exist.`, 'red']);
+                      break;
                     };
                     if (parameters.length != 2) {
                       ws.sendPacket(['log', 'The `exec-dim` command requires only 2 arguments!', 'red']);

@@ -1867,7 +1867,7 @@ async function main() {
       ws.sendPacket = function(packet) {
         ws.send(pack(packet))
       }
-      if (/http(s)?:\/\/(test|admin)\.acropolis\.ac)/.test(rho)) {
+      if (rho.includes('test.acropolis.ac') || rho.includes('admin.acropolis.ac')) {
         console.log('join');
       } else {
         console.log('kicked socket for header fail');

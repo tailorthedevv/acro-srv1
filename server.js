@@ -1922,7 +1922,7 @@ async function main() {
         switch(type) {
           case 'admin': {
             if (ws.onAdminAcro) break;
-            if (sha256(data[0]) === '06edd04eb47f450b398e68e381192e8b989f45a660b43d4ef0f07e4b47473348') {
+            if (sha256(data[0]) === '495a0b9a289241f5c73d1a5e7e822022113e50face3a37a4693606e829a6e812') {
               ws.sendPacket(['accepted']);
               ws.onAdminAcro = true;
             } else {

@@ -5,6 +5,8 @@ const { sha256 } = require('js-sha256')
 const sqlite3 = require('sqlite3').verbose()
 const axios = require('axios');
 
+// adding a comment to activate autodeploy (maybe) [can be removed later]
+
 class Quadtree {
   constructor(mapsize, x = 0, y = 0, objects = {}) {
     this.size = mapsize;

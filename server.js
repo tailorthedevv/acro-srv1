@@ -1988,9 +1988,9 @@ async function main() {
                 };
                 case 'exec-dim': {
                     let dim = false;
-                    for (let dim of dims) {
-                      if (dims.id == parameters[0]) {
-                        dim = dims.id;
+                    for (let thisDim of dims) {
+                      if (thisDim.id == parameters[0]) {
+                        dim = thisDim.id;
                       };
                     };
                     if (!dim) {

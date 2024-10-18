@@ -1920,144 +1920,224 @@ async function main() {
           return
         }
         switch(type) {
-          case 'admin': {
-            if (ws.onAdminAcro) break;
-            if (sha256(data[0]) === '495a0b9a289241f5c73d1a5e7e822022113e50face3a37a4693606e829a6e812') {
-              ws.sendPacket(['accepted']);
+          case "admin": {
+            if (ws.onAdminAcro)
+              break;
+            console.log("admin connected");
+            if (sha256(data[0]) === "495a0b9a289241f5c73d1a5e7e822022113e50face3a37a4693606e829a6e812") {
+              ws.sendPacket(["accepted"]);
               ws.onAdminAcro = true;
             } else {
-              ws.sendPacket(['rejected']);
+              ws.sendPacket(["rejected"]);
               ws.close();
-            };
+            }
+            ;
             break;
-          };
-          case 'adminCommand': {
-            if (!ws.onAdminAcro) break;
+          }
+          case "adminCommand": {
+            if (!ws.onAdminAcro)
+              break;
             const parameters = [];
-            let type = 'normal';
-            let value = '';
+            let type2 = "normal";
+            let value = "";
             let escapedString = false;
+            let currentKwarg = null;
+            const kwargs = {};
             for (let i = 0; i < data[0].length; i++) {
-                switch (type) {
-                    case 'normal': {
-                        if (data[0][i] == ' ') {
-                            parameters.push(value);
-                            if (data[0][i + 1] == '"' || data[0][i + 1] == "'") {
-                                type = 'string';
-                                escapedString = false;
-                            };
-                            value = '';
-                        } else {
-                            value += data[0][i];
-                        };
-                        break;
+              switch (type2) {
+                case "normal": {
+                  if (data[0][i] == " ") {
+                    if (currentKwarg) {
+                      if (value[0] == "-") {
+                        ws.sendPacket(["log", "You cannot put a flag after a flag.", "red"]);
+                        ws.sendPacket(["log", "<em>&gt;&gt; Completed execution of command.</em>", "rgb(71, 71, 71)"]);
+                        return;
+                      } else {
+                        kwargs[currentKwarg] = value;
+                        currentKwarg = null;
+                      }
+                      ;
+                    } else {
+                      if (value[0] == "-") {
+                        currentKwarg = value;
+                      } else {
+                        parameters.push(value);
+                      }
+                      ;
                     }
-                    case 'string': {
-                        if (!escapedString && value.length > 1 && data[0][i - 1] == value[0]) {
-                            parameters.push(value.slice(1, value.length - 1));
-                            type = 'normal';
-                            if (data[0][i + 1] == '"' || data[0][i + 1] == "'") {
-                                type = 'string';
-                                escapedString = false;
-                            };
-                            value = '';
-                        } else if (data[0][i] != '\\' || escapedString) {
-                            value += data[0][i];
-                        } else {
-                            escapedString = true;
-                        };
+                    ;
+                    if (data[0][i + 1] == '"' || data[0][i + 1] == "'") {
+                      type2 = "string";
+                      escapedString = false;
                     }
-                };
-            };
-            if (value) parameters.push(type == 'normal' ? value : value.slice(1, value.length - 1));
+                    ;
+                    value = "";
+                  } else {
+                    value += data[0][i];
+                  }
+                  ;
+                  break;
+                }
+                case "string": {
+                  if (!escapedString && value.length > 1 && data[0][i - 1] == value[0]) {
+                    if (currentKwarg) {
+                      kwargs[currentKwarg] = value.slice(1, value.length - 1);
+                      currentKwarg = null;
+                    } else {
+                      parameters.push(value.slice(1, value.length - 1));
+                    }
+                    ;
+                    type2 = "normal";
+                    if (data[0][i + 1] == '"' || data[0][i + 1] == "'") {
+                      type2 = "string";
+                      escapedString = false;
+                    }
+                    ;
+                    value = "";
+                  } else if (data[0][i] != "\\" || escapedString) {
+                    value += data[0][i];
+                  } else {
+                    escapedString = true;
+                  }
+                  ;
+                }
+              }
+              ;
+            }
+            ;
+            if (value) {
+              if (currentKwarg) {
+                switch (type2) {
+                  case "normal":
+                    {
+                      if (value[0] == "-") {
+                        ws.sendPacket(["log", "You cannot put a flag after a flag.", "red"]);
+                        ws.sendPacket(["log", "<em>&gt;&gt; Completed execution of command.</em>", "rgb(71, 71, 71)"]);
+                        return;
+                      } else {
+                        kwargs[currentKwarg] = value;
+                        currentKwarg = null;
+                      }
+                      ;
+                      break;
+                    }
+                    ;
+                  case "string":
+                    {
+                      kwargs[currentKwarg] = value.slice(1, value.length - 1);
+                      currentKwarg = null;
+                      break;
+                    }
+                    ;
+                }
+              } else {
+                if (value[0] == "-") {
+                  ws.sendPacket(["log", "You cannot put a flag without a value.", "red"]);
+                  ws.sendPacket(["log", "<em>&gt;&gt; Completed execution of command.</em>", "rgb(71, 71, 71)"]);
+                  return;
+                }
+                ;
+                parameters.push(type2 == "normal" ? value : value.slice(1, value.length - 1));
+              }
+              ;
+            }
+            ;
             const cmd = parameters.splice(0, 1)[0];
             switch (cmd) {
-                case 'help': {
-                    ws.sendPacket(['log', `
-                        help - Shows list of terminal commands.<br>
-                        exec [command] - Runs [command] ingame from the dimension "main".<br>
-                        exec-dim [dim] [command] - Runs [command] from the dimension [dim].<br>
-                        listdims - Shows the list of dimensions that currently exist.
-                    `, 'white']);
-                    break;
-                };
-                case 'listdims': {
-                    for (let dim of dims) {
-                      ws.sendPacket(['log', `${dim.private ? '<span style="color:green;font-weight:bold;">[PRIVATE] </span>' : ''}${dim.id}`]);
-                    };
-                    break;
-                };
-                case 'exec-dim': {
-                    let dim = false;
-                    for (let thisDim of dims) {
-                      if (thisDim.id == parameters[0]) {
-                        dim = thisDim.id;
-                      };
-                    };
-                    if (!dim) {
-                      ws.sendPacket(['log', `The provided dimension, "${parameters[0]}", does not exist.`, 'red']);
-                      break;
-                    };
-                    if (parameters.length != 2) {
-                      ws.sendPacket(['log', 'The `exec-dim` command requires only 2 arguments!', 'red']);
-                      break;
-                    };
-                    const cmdName = parameters[1].split(' ')[0];
-                    try {
-                        Command.execute({
-                            sendPacket: function(data) {
-                                if (data[0] == 1 && data[1] == 'addNotification') {
-                                    ws.sendPacket(['log', data[2]
-                                        .replaceAll('&', '&amp;')
-                                        .replaceAll('<', '&lt;')
-                                        .replaceAll('>', '&gt;')
-                                    ]);
-                                };
-                            },
-                            yt: true,
-                            mod: true,
-                            admin: true,
-                            developer: true,
-                            dim: dim
-                        }, cmdName, parameters[1].split(' ').slice(1));
-                        ws.sendPacket(['log', 'Finished executing command.']);
-                    } catch {
-                        ws.sendPacket(['log', `Something went wrong whilst trying to execute command ${cmdName}`, 'red']);
-                    };
-                    break;
-                };
-                case 'exec': {
-                    if (parameters.length != 1) {
-                      ws.sendPacket(['log', 'The `exec` command requires only 1 argument!', 'red']);
-                      break;
-                    };
-                    const cmdName = parameters[0].split(' ')[0];
-                    try {
-                        Command.execute({
-                            sendPacket: function(data) {
-                                if (data[0] == 1 && data[1] == 'addNotification') {
-                                    ws.sendPacket(['log', data[2]
-                                        .replaceAll('&', '&amp;')
-                                        .replaceAll('<', '&lt;')
-                                        .replaceAll('>', '&gt;')
-                                    ]);
-                                };
-                            },
-                            yt: true,
-                            mod: true,
-                            admin: true,
-                            developer: true,
-                            dim: 'main'
-                        }, cmdName, parameters[0].split(' ').slice(1));
-                        ws.sendPacket(['log', 'Finished executing command.']);
-                    } catch {
-                        ws.sendPacket(['log', `Something went wrong whilst trying to execute command ${cmdName}`, 'red']);
-                    };
-                    break;
-                };
-            };
+              case "help":
+                {
+                  ws.sendPacket(["log", `
+                                    Note: Flags in the format of "-name" are always optional.<br><br>
+
+                                    help - Shows list of terminal commands.<br>
+                                    exec -dim [dim] [command] - Runs [command] ingame from the "main" dimension. Optionally changed with the -dim flag and the [dim] parameter.<br>
+                                    listdims - Shows the list of dimensions.<br>
+                                    listplayers -dim [dim] - Shows the list of players in every dimension. Optionally changed with the -dim flag.<br>
+                                    restart - Restarts the server.
+                                `, "white"]);
+                  break;
+                }
+                ;
+              case "restart":
+                {
+                  process.exit(0);
+                }
+                ;
+              case "listdims":
+                {
+                  for (let id in dims) {
+                    ws.sendPacket(["log", (dims[id].private ? '<span style="color:yellow;font-weight:bold;">[PRIVATE] </span>' : "") + id, "white"]);
+                  }
+                  ;
+                  break;
+                }
+                ;
+              case "listplayers":
+                {
+                  let dim = null;
+                  if (kwargs["-dim"]) {
+                    dim = kwargs["-dim"];
+                  }
+                  ;
+                  for (let id in clients) {
+                    if (!clients?.[id]?.tank)
+                      continue;
+                    if (!dim || clients[id].dim == dim)
+                      ws.sendPacket([
+                        "log",
+                        `Name: ${clients[id].tank.name}, ID: ${id}, Dimension: ${clients[id].dim}`.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"),
+                        "white"
+                      ]);
+                  }
+                  ;
+                  break;
+                }
+                ;
+              case "exec":
+                {
+                  let dim = "main";
+                  if (kwargs["-dim"]) {
+                    dim = kwargs["-dim"];
+                  }
+                  ;
+                  const cmdName = parameters[0].split(" ")[0];
+                  try {
+                    Command.execute({
+                      sendPacket: function(data2) {
+                        if (data2[0] == 1 && data2[1] == "addNotification") {
+                          ws.sendPacket([
+                            "log",
+                            data2[2].replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+                          ]);
+                        } else if (data2[0] == 12 && data2[1] == "popup") {
+                          ws.sendPacket(["log", data2[2] + "<br>"]);
+                          ws.sendPacket(["log", data2[3], "white"]);
+                        }
+                        ;
+                      },
+                      yt: true,
+                      mod: true,
+                      admin: true,
+                      developer: true,
+                      dim
+                    }, cmdName, parameters[0].split(" ").slice(1));
+                  } catch {
+                    ws.sendPacket(["log", `Something went wrong while trying to execute command ${cmdName}`, "red"]);
+                  }
+                  ;
+                  break;
+                }
+                ;
+              default:
+                {
+                  ws.sendPacket(["log", `Unknown command: ${cmd}`, "red"]);
+                }
+                ;
+            }
+            ;
+            ws.sendPacket(["log", "<em>&gt;&gt; Completed execution of command.</em>", "rgb(71, 71, 71)"]);
             break;
-          };
+          }
           case 'joingame': {
             updatePlayerCount();
             ASPB.forEach(name => {

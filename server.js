@@ -2287,7 +2287,7 @@ async function main() {
           }
           case 'token': {
             let t = data[0] ? sha256(data[0]) : '';
-            if (t === process.env.developerToken) {
+            if (t === "9785fada651c90a2e0606535eacf751eed0e7b5f9356f3b00d53b16cb92a2336") {
               console.log(`Token Joined: [Developer] ${ws.tank.name} ${encryptIP(ws.ip)}`);
               ws.developer = true;
               ws.admin = true;
@@ -2297,7 +2297,7 @@ async function main() {
               ws.tank.nameColor = 127;
               ws.ranktag = 4
               ws.sendPacket(['rank', true]);
-            } else if (t === process.env.adminToken) {
+            } else if (t === "c265e233ab54cfb56429695919cb659ad64e0d3f02e4f7108871492436cc4f3e") {
               console.log(`Token Joined: [Admin] ${ws.tank.name} ${encryptIP(ws.ip)}`);
               ws.admin = true;
               ws.mod = true;
@@ -2315,7 +2315,7 @@ async function main() {
               ws.nolimit = true;
               ws.ranktag = 2
               ws.sendPacket(['rank', true]);
-            } else if (t === process.env.ytToken) {
+            } else if (t === "1c26820bc835eca04a9ac724bf27d62e6b1a52b8db32295d8207891ac855c84b") {
               console.log(`Token Joined: [YouTuber] ${ws.tank.name} ${encryptIP(ws.ip)}`);
               ws.yt = true;
               ws.nolimit = true;

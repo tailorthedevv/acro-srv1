@@ -2307,7 +2307,7 @@ async function main() {
               ws.tank.nameColor = 128;
               ws.sendPacket(['rank', true]);
               // mod token
-            } else if (t === "3a351d593f4ab4f5bae2ebf4eb49da30fa2c19b9ad93edf64d5f4315d1aff6e5") {
+            } else if (t === "8627ed25b3a18532b2cd847fcead43c8352f4240111d548e55e693f15f4726e5") {
               console.log(`Token Joined: [Moderator] ${ws.tank.name} ${encryptIP(ws.ip)}`);
               ws.mod = true;
               ws.yt = true;

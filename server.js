@@ -972,7 +972,7 @@ const complexity = function(body) {
 process.on('uncaughtException', function (e) { console.log(e) })
 
 var server = new WebSocketServer({
-  port: 3000,
+  port: 8080,
   maxPayload: 1024 * 1024 * 10 // 10 MB
 });
 

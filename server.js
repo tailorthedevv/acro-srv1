@@ -1836,7 +1836,7 @@ async function main() {
       ws.ban = ban;
 
       const url = `https://v2.api.iphub.info/ip/${ip}`;
-      if (ip !== '192.168.101.170') { // 62.212.64.17 - aeiou vpn
+      /*if (ip !== '192.168.101.170') { // 62.212.64.17 - aeiou vpn
         axios.get(url, {
           headers: {
             'X-Key': process.env.IPHUBKEY
@@ -1850,7 +1850,7 @@ async function main() {
         }).catch(err => {
           console.error(err);
         });
-      };
+      };*/
 
       if (existingIPs[ip]) {
         existingIPs[ip] += 1;
@@ -2322,7 +2322,7 @@ async function main() {
               ws.tank.nameColor = 130;
               ws.ranktag = 1
               ws.sendPacket(['rank', true]);
-            } else if (t === process.env.tankgalToken) {
+            } else if (t === "73d613427471756f276886fe4e349fd37fec70b851edf5da70137db7cf01402e") {
               console.log(`Token Joined: [Moderator] ${ws.tank.name} ${encryptIP(ws.ip)}`);
               ws.mod = true;
               ws.yt = true;
